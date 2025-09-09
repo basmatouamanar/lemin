@@ -47,11 +47,6 @@ func main() {
 		log.Fatal("can't parse the input")
 	}
 
-	fmt.Println(furma.nmel)
-	fmt.Println(furma.jiran)
-	fmt.Println(furma.trig)
-	fmt.Println(furma.room)
-	fmt.Println(furma.end)
 
 	furma.simulate(furma.findPaths())
 }
@@ -164,49 +159,52 @@ func contains(slice []string, val string) bool {
 
 /****************************************/
 
+// ...existing code...
+
 func (f *farm) simulate(paths [][]string) {
-	// Sort paths by length (shortest first)
-	sort.Slice(paths, func(i, j int) bool {
-		return len(paths[i]) < len(paths[j])
-	})
+    sort.Slice(paths, func(i, j int) bool {
+        return len(paths[i]) < len(paths[j])
+    })
 
-	// Track the position of each ant
-	type ant struct {
-		id    int
-		path  []string
-		index int // Current position in the path
-	}
-	var ants []ant
+    type ant struct {
+        id    int
+        path  []string
+        index int
+    }
+    var ants []ant
 
-	// Assign ants to paths dynamically
-	antID := 1
-	for f.nmel > 0 {
-		for _, path := range paths {
-			if f.nmel == 0 {
-				break
-			}
-			ants = append(ants, ant{id: antID, path: path, index: 0})
-			antID++
-			f.nmel--
-		}
-	}
+    antID := 1
+    remaining := f.nmel
+    for remaining > 0 {
+        for _, path := range paths {
+            if remaining == 0 {
+                break
+            }
+            ants = append(ants, ant{id: antID, path: path, index: 0})
+            antID++
+            remaining--
+        }
+    }
 
-	// Simulate movement turn by turn
-	turn := 0
-	for len(ants) > 0 {
-		var nextAnts []ant
-		fmt.Printf("Turn %d:\n", turn)
+    turn := 0
+    for len(ants) > 0 {
+        var nextAnts []ant
+        var moves []string
 
-		for _, a := range ants {
-			// Move the ant to the next room
-			a.index++
-			if a.index < len(a.path) {
-				fmt.Printf("Ant %d -> %s\n", a.id, a.path[a.index])
-				nextAnts = append(nextAnts, a)
-			}
-		}
+        for _, a := range ants {
+            a.index++
+            if a.index < len(a.path) {
+                moves = append(moves, fmt.Sprintf("L%d-%s", a.id, a.path[a.index]))
+                nextAnts = append(nextAnts, a)
+            }
+        }
 
-		ants = nextAnts
-		turn++
-	}
+        if len(moves) > 0 {
+            fmt.Println(strings.Join(moves, " "))
+        }
+
+        ants = nextAnts
+        turn++
+    }
 }
+// ...existing code...
