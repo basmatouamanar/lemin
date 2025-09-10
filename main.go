@@ -157,9 +157,9 @@ func contains(slice []string, val string) bool {
 	return false
 }
 
-/****************************************/
 
-// ...existing code...
+
+
 
 func (f *farm) simulate(paths [][]string) {
     sort.Slice(paths, func(i, j int) bool {
@@ -207,4 +207,3 @@ func (f *farm) simulate(paths [][]string) {
         turn++
     }
 }
-// ...existing code...
