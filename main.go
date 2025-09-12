@@ -3,6 +3,12 @@ package main
 import (
 	"fmt"
 	"lemin/helpers"
+
+)
+
+
+var (
+	rooms []*helpers.Room
 )
 
 func main() {
@@ -15,6 +21,10 @@ func main() {
 	if helpers.ValidateData(data) {
 		fmt.Println("✅")
 	}
-	helpers.RealizeLink(data)
-	
+	helpers.RealizeLink(data, &rooms)
+	StartRoom, EndRoom := helpers.Path(data, &rooms)
+	graphe := helpers.Graphe(rooms)
+	helpers.Bfs(graphe, StartRoom, EndRoom)
+
+
 }

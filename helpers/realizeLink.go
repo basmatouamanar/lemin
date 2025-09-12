@@ -10,9 +10,11 @@ type Room struct {
 	Name   string
 	X, Y   int
 	linker []*Room
+	Start  bool
+    End    bool
 }
 
-func RealizeLink(data []string) {
+func RealizeLink(data []string, Rooms *[]*Room) {
 	rooms := make(map[string]*Room)
 	for _, line := range data {
 		line = strings.TrimSpace(line)
@@ -30,21 +32,34 @@ func RealizeLink(data []string) {
 				Y:    y,
 			}
 			rooms[room.Name] = room
+
+			*Rooms = append(*Rooms, room)
 		}
 		if strings.Contains(line, "-") && !strings.HasPrefix(line, "#") {
 			s := strings.Split(line, "-")
 			if len(s) == 2 {
 				room1 := rooms[s[0]]
 				room2 := rooms[s[1]]
-				if room1 != nil && room2 != nil {
-					room1.linker = append(room1.linker, room2)
-					room2.linker = append(room2.linker, room1)
+				for i := range *Rooms {
+					if (*Rooms)[i].Name == s[0] {
+						(*Rooms)[i].linker = append((*Rooms)[i].linker, room2)
+					}
+					if (*Rooms)[i].Name == s[1] {
+						(*Rooms)[i].linker = append((*Rooms)[i].linker, room1)
+					}
 				}
-			}
+			}	
 		}
+		
 	}
-	/*for _, r := range rooms["1"].linker {
-		fmt.Println(r.Name, r.X, r.Y)
-	}*/
+	for _, r := range *Rooms {
+	fmt.Print(r.Name, ": ")
+	for _, l := range r.linker {
+		fmt.Print(l.Name, " ")
+	}
+	fmt.Println()
+}
+
 
 }
+// (*Rooms)[i].linker = original.linker
