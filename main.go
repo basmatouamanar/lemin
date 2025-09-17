@@ -24,6 +24,7 @@ func main() {
 	graphe := helpers.Graphe(rooms)
 	// fmt.Println(graphe, "heeee")
 	var save [][]string
+	
 	for {
 		path := helpers.Bfs(graphe, StartRoom, EndRoom)
 		if path == nil || len(path) == 0 {
