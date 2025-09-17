@@ -1,8 +1,6 @@
 package helpers
 
-import "fmt"
-
-func Bfs(graphe map[string][]string, start, end *Room) {
+func Bfs(graphe map[string][]string, start, end *Room) []string {
 	queue := []string{start.Name}
 	visited := map[string]bool{start.Name: true}
 	parent := map[string]string{}
@@ -23,6 +21,9 @@ func Bfs(graphe map[string][]string, start, end *Room) {
 			}
 		}
 	}
+	if !visited[end.Name] {
+		return nil
+	}
 
 	// Reconstruire le chemin
 	path := []string{}
@@ -32,6 +33,5 @@ func Bfs(graphe map[string][]string, start, end *Room) {
 			break
 		}
 	}
-	fmt.Println(path,"here")
+	return path
 }
-
