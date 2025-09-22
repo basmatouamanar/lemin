@@ -1,12 +1,15 @@
 package helpers
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 )
 
-func Path(lignes []string, rooms *[]*Room) (*Room, *Room) {
+func Path(lignes []string, rooms *[]*Room) (*Room, *Room, int) {
 	var startRoom *Room
 	var endRoom *Room
+	var ants int 
 
 	for i := 0; i < len(lignes); i++ {
 		if lignes[i] == "##start" {
@@ -31,10 +34,16 @@ func Path(lignes []string, rooms *[]*Room) (*Room, *Room) {
 				}
 			}
 		}
+		if i == 0  {
+			n, err := strconv.Atoi(lignes[i])
+			if err != nil {
+				fmt.Println("somthing is wrong")
+			}
+			ants = n 
+		}
 		
 	}
-	
-		return startRoom, endRoom
+	return startRoom, endRoom, ants
 	
 	
 }

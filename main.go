@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
+
 	"lemin/helpers"
 )
 
-var (
-	rooms []*helpers.Room
-)
+var rooms []*helpers.Room
 
 func main() {
 	data, err := helpers.ReadFile("sample.txt")
@@ -20,7 +19,8 @@ func main() {
 		fmt.Println("✅")
 	}
 	helpers.RealizeLink(data, &rooms)
-	StartRoom, EndRoom := helpers.Path(data, &rooms)
+	StartRoom, EndRoom, ants := helpers.Path(data, &rooms)
+	fmt.Println(ants, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaants")
 	graphe := helpers.Graphe(rooms)
 	// fmt.Println(graphe, "heeee")
 	var save [][]string
@@ -47,5 +47,6 @@ func main() {
 		}
 	}
 	fmt.Println(save)
-
+	helpers.Distribute(save, ants)
+	fmt.Println(ants, "heeeeeeeere")
 }
