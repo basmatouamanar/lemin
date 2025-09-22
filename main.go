@@ -185,7 +185,7 @@ func checkTunnel(tunnels []Tunnel, from, to string) error {
 	}
 	return nil
 }
-
+// find all possible path from start to end using dfs recursive
 func findPaths(tunnels []Tunnel, start, end string, path []string) {
 	path = append(path, start)
 	if start == end {
@@ -204,6 +204,7 @@ func findPaths(tunnels []Tunnel, start, end string, path []string) {
 	}
 }
 
+// check if the room is already in the path
 func containsRoom(path []string, room string) bool {
 	for _, r := range path {
 		if r == room {
@@ -213,12 +214,15 @@ func containsRoom(path []string, room string) bool {
 	return false
 }
 
+
+// sort paths according to their lenght  
 func sortPaths(paths *[][]string) {
 	sort.Slice(*paths, func(i, j int) bool {
 		return len((*paths)[i]) < len((*paths)[j])
 	})
 }
 
+//find two path that share the same rooms
 func pathsOverlap(a, b []string) bool {
 	set := make(map[string]bool)
 	for _, room := range a[1 : len(a)-1] { // ignore start and end for overlap check
@@ -232,6 +236,7 @@ func pathsOverlap(a, b []string) bool {
 	return false
 }
 
+//keep only path do not intersect
 func getDisjointPaths(paths [][]string) [][]string {
 	var result [][]string
 	for _, path := range paths {
@@ -249,6 +254,7 @@ func getDisjointPaths(paths [][]string) [][]string {
 	return result
 }
 
+//select the best sets of path according to lenght and number of ants
 func getBestPaths(paths [][]string, antCount int) [][]string {
 	sortPaths(&paths)
 	disjoint := getDisjointPaths(paths)
@@ -268,6 +274,7 @@ func getBestPaths(paths [][]string, antCount int) [][]string {
 	return best
 }
 
+//calculate how many turn we need  for all the ants to reash the end
 func calculateTurns(paths [][]string, antCount int) int {
 	pathLens := make([]int, len(paths))
 	for i, path := range paths {
@@ -290,6 +297,7 @@ func calculateTurns(paths [][]string, antCount int) int {
 	return turns
 }
 
+// distribute the ants on path fairly
 func distributeAnts(totalAnts int, paths [][]string) ([][]string, []int) {
 	pathLens := make([]int, len(paths))
 	for i, path := range paths {
@@ -323,6 +331,9 @@ func distributeAnts(totalAnts int, paths [][]string) ([][]string, []int) {
 
 	return finalPaths, ants
 }
+
+
+//print the mouvement of ants step by step
 func printAnts(paths [][]string, pathCounts []int) {
 	type antState struct {
 		id    int
