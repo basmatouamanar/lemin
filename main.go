@@ -17,6 +17,8 @@ func main() {
 
 	if helpers.ValidateData(data) {
 		fmt.Println("✅")
+	}else {
+		return
 	}
 	helpers.RealizeLink(data, &rooms)
 	StartRoom, EndRoom, ants := helpers.Path(data, &rooms)

@@ -10,7 +10,6 @@ F 2 2
 G 3 0
 H 3 1
 I 3 2
-##end
 T 4 1
 S-A
 S-B
@@ -24,4 +23,5 @@ E-H
 F-I
 G-T
 H-T
+I-T
 I-T

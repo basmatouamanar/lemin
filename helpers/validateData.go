@@ -63,7 +63,6 @@ func ValidateData(str []string) bool {
 				}
 			}
 		}
-
 		// Cas des rooms (3 arguments)
 		if len(ligne) == 3 {
 			s1 := ligne[0]
@@ -75,7 +74,7 @@ func ValidateData(str []string) bool {
 				}
 			}
 			slice = append(slice, s1)
-
+			
 			arg2, err := strconv.Atoi(ligne[1])
 			if err != nil {
 				fmt.Println("this is a invalid argument")
@@ -86,10 +85,10 @@ func ValidateData(str []string) bool {
 				fmt.Println("this is a invalid argument")
 				return false
 			}
-
+			
 			s2 := strconv.Itoa(arg2)
 			s3 := strconv.Itoa(arg3)
-
+			
 			for _, v := range slice2 {
 				if s2+s3 == v {
 					fmt.Println("this is a invalid argument")
@@ -99,6 +98,10 @@ func ValidateData(str []string) bool {
 			slice2 = append(slice2, s2+s3)
 		}
 	}
-
+	
+	if !foundEnd || !foundStart {
+		fmt.Println("the start or end is missing")
+		return false
+	}
 	return true
 }
