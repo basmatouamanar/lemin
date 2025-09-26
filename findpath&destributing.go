@@ -3,7 +3,12 @@ package main
 import "sort"
 
 // find all possible path from start to end using dfs recursive
+const maxDFSPaths = 2000 // safety cap to avoid exponential blowup on huge graphs
+
 func findPaths(tunnels []Tunnel, start, end string, path []string) {
+	if len(Paths) >= maxDFSPaths {
+		return
+	}
 	path = append(path, start)
 	if start == end {
 		newPath := make([]string, len(path))
@@ -31,8 +36,7 @@ func containsRoom(path []string, room string) bool {
 	return false
 }
 
-
-// sort paths according to their lenght  
+// sort paths according to their lenght
 func sortPaths(paths *[][]string) {
 	sort.Slice(*paths, func(i, j int) bool {
 		return len((*paths)[i]) < len((*paths)[j])
@@ -71,20 +75,118 @@ func getDisjointPaths(paths [][]string) [][]string {
 	return result
 }
 
-//select the best sets of path according to lenght and number of ants
+// generate all disjoint groups (all subsets with no room overlap excluding start/end)
+func generateDisjointGroups(paths [][]string) [][][]string {
+	// Precompute room sets for each path (excluding start/end)
+	pathRooms := make([]map[string]bool, len(paths))
+	for i, p := range paths {
+		rooms := make(map[string]bool)
+		if len(p) > 2 {
+			for _, r := range p[1 : len(p)-1] {
+				rooms[r] = true
+			}
+		}
+		pathRooms[i] = rooms
+	}
+
+	var groups [][][]string
+	usedRooms := make(map[string]bool)
+
+	var backtrack func(idx int, current [][]string)
+	backtrack = func(idx int, current [][]string) {
+		if idx == len(paths) {
+			if len(current) > 0 {
+				snapshot := make([][]string, len(current))
+				copy(snapshot, current)
+				groups = append(groups, snapshot)
+			}
+			return
+		}
+
+		// Option 1: skip current path
+		backtrack(idx+1, current)
+
+		// Option 2: take current path if no overlap
+		canTake := true
+		for r := range pathRooms[idx] {
+			if usedRooms[r] {
+				canTake = false
+				break
+			}
+		}
+		if canTake {
+			// mark rooms
+			for r := range pathRooms[idx] {
+				usedRooms[r] = true
+			}
+			current = append(current, paths[idx])
+			backtrack(idx+1, current)
+			// unmark rooms
+			current = current[:len(current)-1]
+			for r := range pathRooms[idx] {
+				delete(usedRooms, r)
+			}
+		}
+	}
+
+	backtrack(0, nil)
+	return groups
+}
+
+//select the best set of paths considering all disjoint groups, ant count and path lengths
 func getBestPaths(paths [][]string, antCount int) [][]string {
+	if len(paths) == 0 {
+		return nil
+	}
 	sortPaths(&paths)
-	disjoint := getDisjointPaths(paths)
+
+	// Cap number of paths to consider for combinatorics
+	const maxPathsForGrouping = 16
+	if len(paths) > maxPathsForGrouping {
+		paths = paths[:maxPathsForGrouping]
+	}
+
+	groups := generateDisjointGroups(paths)
+	if len(groups) == 0 {
+		return nil
+	}
 
 	best := [][]string{}
-	minTurns := int(^uint(0) >> 1) // Max int
+	minTurns := int(^uint(0) >> 1)
+	bestTotalLen := int(^uint(0) >> 1)
 
-	for i := 1; i <= len(disjoint); i++ {
-		set := disjoint[:i]
-		turns := calculateTurns(set, antCount)
+	for _, g := range groups {
+		turns := calculateTurns(g, antCount)
 		if turns < minTurns {
 			minTurns = turns
-			best = set
+			best = g
+			// compute total length for tiebreaker
+			total := 0
+			for _, p := range g {
+				total += len(p)
+			}
+			bestTotalLen = total
+			continue
+		}
+		if turns == minTurns {
+			// tiebreaker: prefer more paths; if equal, prefer smaller total length
+			if len(g) > len(best) {
+				best = g
+				total := 0
+				for _, p := range g {
+					total += len(p)
+				}
+				bestTotalLen = total
+			} else if len(g) == len(best) {
+				total := 0
+				for _, p := range g {
+					total += len(p)
+				}
+				if total < bestTotalLen {
+					best = g
+					bestTotalLen = total
+				}
+			}
 		}
 	}
 
@@ -146,4 +248,3 @@ func distributeAnts(totalAnts int, paths [][]string) ([][]string, []int) {
 
 	return finalPaths, ants
 }
-
