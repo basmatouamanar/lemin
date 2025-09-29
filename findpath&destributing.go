@@ -1,9 +1,12 @@
 package main
 
-import "sort"
+import (
+	"math"
+	"sort"
+)
 
 // find all possible path from start to end using dfs recursive
-const maxDFSPaths = 2000 // safety cap to avoid exponential blowup on huge graphs
+const maxDFSPaths = 20000 // safety cap to avoid exponential blowup on huge graphs
 
 func findPaths(tunnels []Tunnel, start, end string, path []string) {
 	if len(Paths) >= maxDFSPaths {
@@ -17,11 +20,12 @@ func findPaths(tunnels []Tunnel, start, end string, path []string) {
 		return
 	}
 
+
 	for _, tunnel := range tunnels {
 		if start == tunnel.From && !containsRoom(path, tunnel.To) {
 			findPaths(tunnels, tunnel.To, end, path)
 		} else if start == tunnel.To && !containsRoom(path, tunnel.From) {
-			findPaths(tunnels, tunnel.From, end, path)
+			findPaths(tunnels, tunnel.From, end, path) 
 		}
 	}
 }
@@ -43,37 +47,6 @@ func sortPaths(paths *[][]string) {
 	})
 }
 
-//find two path that share the same rooms
-func pathsOverlap(a, b []string) bool {
-	set := make(map[string]bool)
-	for _, room := range a[1 : len(a)-1] { // ignore start and end for overlap check
-		set[room] = true
-	}
-	for _, room := range b[1 : len(b)-1] {
-		if set[room] {
-			return true
-		}
-	}
-	return false
-}
-
-//keep only path do not intersect
-func getDisjointPaths(paths [][]string) [][]string {
-	var result [][]string
-	for _, path := range paths {
-		conflict := false
-		for _, existing := range result {
-			if pathsOverlap(existing, path) {
-				conflict = true
-				break
-			}
-		}
-		if !conflict {
-			result = append(result, path)
-		}
-	}
-	return result
-}
 
 // generate all disjoint groups (all subsets with no room overlap excluding start/end)
 func generateDisjointGroups(paths [][]string) [][][]string {
@@ -122,7 +95,6 @@ func generateDisjointGroups(paths [][]string) [][][]string {
 			current = append(current, paths[idx])
 			backtrack(idx+1, current)
 			// unmark rooms
-			current = current[:len(current)-1]
 			for r := range pathRooms[idx] {
 				delete(usedRooms, r)
 			}
@@ -152,8 +124,8 @@ func getBestPaths(paths [][]string, antCount int) [][]string {
 	}
 
 	best := [][]string{}
-	minTurns := int(^uint(0) >> 1)
-	bestTotalLen := int(^uint(0) >> 1)
+	minTurns := math.MaxInt64
+	bestTotalLen := math.MaxInt64
 
 	for _, g := range groups {
 		turns := calculateTurns(g, antCount)
