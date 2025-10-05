@@ -1,4 +1,4 @@
-package Utils
+package Parsing
 
 import (
 	"fmt"

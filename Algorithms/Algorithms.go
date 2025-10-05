@@ -6,9 +6,10 @@ import (
 	"lem-in/Helpers"
 	"os"
 )
-
-// OrderAnts assigns ants to the shortest path and calculates the number of turns required.
-// It returns the number of turns and the ordered list of ants.
+// OrderAnts distributes the ants across the chosen set of paths. 
+// It assigns ants in a way that balances path length with the number of ants already on each path. 
+// The goal is to minimize the total number of turns required. 
+// Returns the number of turns and the distribution of ants per path.
 func OrderAnts(indexValidPaths int) (int, []int) {
 
 	foundPath := GlobVar.AllValidPaths[indexValidPaths]
@@ -37,8 +38,11 @@ func OrderAnts(indexValidPaths int) (int, []int) {
 	return shortestPathLen - 1, ants
 }
 
-// FindValidPaths uses BFS to find all valid paths from the start room to the end room.
-// It handles backtracking and ensures that paths do not overlap.
+
+// FindValidPaths runs multiple BFS iterations to find all valid non-overlapping paths. 
+// It manages backtracking when conflicts are detected between new and old paths. 
+// The function removes conflicting links and keeps exploring until no more paths exist. 
+// If no valid paths are found, the program exits with an error.
 func FindValidPaths() {
 
 	linksToRemove := make(map[string][]string)
@@ -86,8 +90,9 @@ func FindValidPaths() {
 	}
 }
 
-// CheckIfBackTrackingPath checks if the last found path is backtracking over an existing path.
-// It returns the rooms involved in the backtracking.
+// CheckIfBackTrackingPath inspects the last discovered path to see if it overlaps backwards 
+// with any previously found paths. It compares links in reverse order to detect conflicts. 
+// Returns a flag (true/false) and the nodes involved if a backtracking conflict is found.
 func CheckIfBackTrackingPath() (bool, string, string) {
 	lastPath := GlobVar.ValidPaths[len(GlobVar.ValidPaths)-1]
 	pathRooms := GlobVar.ValidPaths[:len(GlobVar.ValidPaths)-1]
@@ -109,9 +114,11 @@ func CheckIfBackTrackingPath() (bool, string, string) {
 	return false, "", ""
 }
 
-
-// BFS performs a breadth-first search to find a valid path from the start room to the end room.
-// It handles backtracking and ensures that rooms are not revisited.
+// BFS performs a Breadth-First Search to explore paths from the start room to the end room. 
+// It expands all possible routes level by level until the end is found. 
+// Whenever a path to the end is discovered, it is saved as a valid path. 
+// The function avoids revisiting nodes and cleans up paths that are blocked. 
+// Returns true if at least one valid path is found, otherwise false.
 func BFS() bool {
 
 	startRoom := GlobVar.Rooms[GlobVar.Start]

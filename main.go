@@ -5,7 +5,7 @@ import (
 	"lem-in/Algorithms"
 	"lem-in/GlobVar"
 	"lem-in/Helpers"
-	"lem-in/Utils"
+	"lem-in/Parsing"
 	"os"
 	"sort"
 )
@@ -27,7 +27,7 @@ func main() {
 	}
 
 	// Parse the input data and initialize global variables
-	err = Utils.ParsingData(string(dataBytes))
+	err = Parsing.ParsingData(string(dataBytes))
 
 
 	GlobVar.OriginalRooms = Helpers.CopyRoomsMap(GlobVar.Rooms)
@@ -59,6 +59,6 @@ func main() {
 	}
 
 	// Print the results, including the input data and ant movements
-	Utils.HandleExport(antsOrdred,lessTurns,shortestPathIndex, string(dataBytes))
+	Parsing.HandleExport(antsOrdred,lessTurns,shortestPathIndex, string(dataBytes))
 	fmt.Println()
 }
