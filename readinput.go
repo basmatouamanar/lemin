@@ -12,6 +12,9 @@ func readInput(fileName string) (AntFarm, []string, error) {
 	var farm AntFarm
 	var state string
 	var file []string
+	var foundStart bool
+	var foundEnd bool
+	var slice []string
 
 	fileHandle, err := os.Open(fileName)
 	if err != nil {
@@ -23,7 +26,18 @@ func readInput(fileName string) (AntFarm, []string, error) {
 	for i := 0; scanner.Scan(); i++ {
 		file = append(file, scanner.Text())
 		line := strings.TrimSpace(scanner.Text())
-
+		if line == "##start" {
+			if foundStart {
+				return AntFarm{}, []string{}, fmt.Errorf("ERROR: multiple start")
+			}
+			foundStart = true
+		}
+		if line == "##end" {
+			if foundEnd {
+				return AntFarm{}, []string{}, fmt.Errorf("ERROR: multiple end")
+			}
+			foundEnd = true
+		}
 		if line == "" || strings.HasPrefix(line, "#") {
 			if line == "##start" {
 				state = "start"
@@ -32,8 +46,19 @@ func readInput(fileName string) (AntFarm, []string, error) {
 			}
 			continue
 		}
-
 		parts := strings.Fields(line)
+		if len(parts) == 3 {
+			s1 := parts[0]
+			// Vérifier doublon
+			for _, v := range slice {
+				if s1 == v {
+					fmt.Println("this is a invalid argument")
+					return AntFarm{}, []string{}, fmt.Errorf("invalid room")
+				}
+			}
+			slice = append(slice, s1)
+
+		}
 		if len(parts) == 1 && i == 0 && !strings.Contains(parts[0], "-") {
 			ants, err := strconv.Atoi(parts[0])
 			if err != nil || ants < 1 {
@@ -84,6 +109,19 @@ func readInput(fileName string) (AntFarm, []string, error) {
 			} else {
 				return AntFarm{}, []string{}, fmt.Errorf("invalid data format")
 			}
+			rooms := strings.Split(parts[0], "-")
+			found1, found2 := false, false
+				for _, r := range slice {
+					if r == rooms[0] {
+						found1 = true
+					}
+					if r == rooms[1] {
+						found2 = true
+					}
+				}
+				if !found1 || !found2 {
+					return AntFarm{}, []string{}, fmt.Errorf("link points to invalid room")
+				}
 		} else {
 			return AntFarm{}, []string{}, fmt.Errorf("invalid data format")
 		}
