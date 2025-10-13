@@ -153,7 +153,7 @@ func fillRoomData(str string) error {
     }
 
     if (split[0] == Var.Start && split[1] == Var.End) || (split[0] == Var.End && split[1] == Var.Start) {
-        Var.ValidPaths = [][]string{{Var.Start, Var.End}}
+        Var.VPaths = [][]string{{Var.Start, Var.End}}
         return nil
     }
 

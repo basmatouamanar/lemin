@@ -12,6 +12,6 @@ var (
 	Rooms         = make(map[string]Room)
 	Start         string
 	End           string
-	ValidPaths    [][]string
-	AllValidPaths [][][]string
+	VPaths    [][]string
+	AllVPaths [][][]string
 )

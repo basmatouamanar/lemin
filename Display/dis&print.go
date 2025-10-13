@@ -20,7 +20,7 @@ func Printing(antsPerPath []int, totalTurns int, shortestPathIndex int, original
 	for pathIndex, numAnts := range antsPerPath {
 		for antNum := 0; antNum < numAnts; antNum++ {
 			// Iterate through rooms in the path for this ant
-			for stepIndex, roomName := range Var.AllValidPaths[shortestPathIndex][pathIndex][1:] {
+			for stepIndex, roomName := range Var.AllVPaths[shortestPathIndex][pathIndex][1:] {
 				targetIndex := stepIndex + antNum
 
 				// Ensure the result slice has enough entries
@@ -42,6 +42,7 @@ func Printing(antsPerPath []int, totalTurns int, shortestPathIndex int, original
 
 	// Print the simulated movements turn by turn
 	fmt.Print(strings.Join(movementLog, "\n"))
+	fmt.Println()
 }
 
 // OrderAnts distributes the ants across the chosen set of paths.
@@ -50,7 +51,7 @@ func Printing(antsPerPath []int, totalTurns int, shortestPathIndex int, original
 // Returns the number of turns and the distribution of ants per path.
 func DistributeAnts(pathIndex int) (int, []int) {
 	// Get all valid paths for this index
-	paths := Var.AllValidPaths[pathIndex]
+	paths := Var.AllVPaths[pathIndex]
 	totalAnts := Var.AntsNumber
 
 	// Prepare an array to track how many ants go on each path

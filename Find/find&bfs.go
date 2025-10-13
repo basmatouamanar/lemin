@@ -23,18 +23,18 @@ func FindValidPaths() {
 
 		Helpers.SaveBeforeInPath()
 
-		isBacktrack, fromRoom, toRoom := CheckIfBackTrackingPath()
+		isBacktrack, fromRoom, toRoom := CheckBT()
 
 		if isBacktrack {
 			// Save the removed link so we can rebuild later
 			removedLinks[fromRoom] = append(removedLinks[fromRoom], toRoom)
 
 			// Store current valid paths except the last one (the conflicting one)
-			Var.AllValidPaths = append(Var.AllValidPaths, Var.ValidPaths[:len(Var.ValidPaths)-1])
+			Var.AllVPaths = append(Var.AllVPaths, Var.VPaths[:len(Var.VPaths)-1])
 
 			// Reset paths and restore original room graph
-			Var.ValidPaths = [][]string{}
-			Var.Rooms = Helpers.CopyRoomsMap(Var.OriginalRooms)
+			Var.VPaths = [][]string{}
+			Var.Rooms = Helpers.CopyRooms(Var.OriginalRooms)
 
 			// Remove backtracking links from the graph
 			for src, targets := range removedLinks {
@@ -49,28 +49,28 @@ func FindValidPaths() {
 				}
 			}
 
-		} else if Var.AntsNumber == len(Var.ValidPaths) {
+		} else if Var.AntsNumber == len(Var.VPaths) {
 			return
 		} else {
 			Helpers.RemovePathsLinks()
 		}
 	}
 
-	if len(Var.ValidPaths) == 0 {
+	if len(Var.VPaths) == 0 {
 		fmt.Println("ERROR: No valid paths found!")
 		os.Exit(0)
 	}
 }
 
-// CheckIfBackTrackingPath inspects the last discovered path to see if it overlaps backwards
+// CheckBT inspects the last discovered path to see if it overlaps backwards
 // with any previously found paths. It compares links in reverse order to detect conflicts.
 // Returns a flag (true/false) and the nodes involved if a backtracking conflict is found.
-func CheckIfBackTrackingPath() (bool, string, string) {
+func CheckBT() (bool, string, string) {
 	// The most recently found path
-	currentPath := Var.ValidPaths[len(Var.ValidPaths)-1]
+	currentPath := Var.VPaths[len(Var.VPaths)-1]
 
 	// All previously found valid paths
-	previousPaths := Var.ValidPaths[:len(Var.ValidPaths)-1]
+	previousPaths := Var.VPaths[:len(Var.VPaths)-1]
 
 	// Map to store reversed connections from previous paths
 	reversedConnections := make(map[string]string)
@@ -144,7 +144,7 @@ func BFS() bool {
 					} else {
 						activePaths = append(activePaths, append(activePaths[i][:len(activePaths[i])-1], neighborName))
 					}
-					Var.ValidPaths = append(Var.ValidPaths, activePaths[i])
+					Var.VPaths = append(Var.VPaths, activePaths[i])
 					Helpers.ResetIsChecked()
 					return true
 				}
@@ -165,7 +165,7 @@ func BFS() bool {
 						activePaths = append(activePaths, append(newPath[:len(newPath)-1], neighborName))
 					}
 
-					// ❌ Dead-end: no valid links left
+					//  Dead-end: no valid links left
 				} else if linkIndex == len(Var.Rooms[currentRoomName].Links)-1 && validConnections == 0 {
 					if i+1 < len(activePaths) {
 						activePaths = append(activePaths[:i], activePaths[i+1:]...)

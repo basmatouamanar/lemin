@@ -29,18 +29,18 @@ func main() {
 	// Parse the input data and initialize global variables
 	err = Parsing.ParseData(string(dataBytes))
 
-	Var.OriginalRooms = Helpers.CopyRoomsMap(Var.Rooms)
+	Var.OriginalRooms = Helpers.CopyRooms(Var.Rooms)
 	if err != nil {
 		fmt.Println("ERROR: invalid data format;", err)
 		return
 	}
 
 	Find.FindValidPaths()
-	Var.AllValidPaths = append(Var.AllValidPaths, Var.ValidPaths)
+	Var.AllVPaths = append(Var.AllVPaths, Var.VPaths)
 
 	// Sort valid paths by length (shortest first)
-	sort.Slice(Var.ValidPaths, func(i, j int) bool {
-		return len(Var.ValidPaths[i]) < len(Var.ValidPaths[j])
+	sort.Slice(Var.VPaths, func(i, j int) bool {
+		return len(Var.VPaths[i]) < len(Var.VPaths[j])
 	})
 
 	// Assign ants to the initial path and calculate the required turns
@@ -48,7 +48,7 @@ func main() {
 	minTurns, orderedAnts := Display.DistributeAnts(0)
 
 	// Evaluate all other paths to find the path with the minimum number of turns
-	for pathIndex := 1; pathIndex < len(Var.AllValidPaths); pathIndex++ {
+	for pathIndex := 1; pathIndex < len(Var.AllVPaths); pathIndex++ {
 		turns, antsPerPath := Display.DistributeAnts(pathIndex)
 		if turns < minTurns {
 			orderedAnts = antsPerPath
@@ -59,5 +59,5 @@ func main() {
 
 	// Print the results, including input data and ant movements
 	Display.Printing(orderedAnts, minTurns, selectedPathIndex, string(dataBytes))
-	fmt.Println()
+	
 }

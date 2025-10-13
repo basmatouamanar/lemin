@@ -5,8 +5,8 @@ import "lemin/Var"
 // RemovePathsLinks removes links between rooms that are part of a valid path.
 // This ensures that paths do not overlap.
 func RemovePathsLinks() {
-	for pathIndex := 0; pathIndex < len(Var.ValidPaths); pathIndex++ {
-		currentPath := Var.ValidPaths[pathIndex]
+	for pathIndex := 0; pathIndex < len(Var.VPaths); pathIndex++ {
+		currentPath := Var.VPaths[pathIndex]
 
 		// Iterate through each room in the path (except the last one)
 		for roomIndex := 0; roomIndex < len(currentPath)-1; roomIndex++ {
@@ -26,7 +26,7 @@ func RemovePathsLinks() {
 // This is used during backtracking to avoid revisiting rooms.
 func SaveBeforeInPath() {
 	// Get the most recently found valid path
-	currentPath := Var.ValidPaths[len(Var.ValidPaths)-1]
+	currentPath := Var.VPaths[len(Var.VPaths)-1]
 
 	// For each room in the path (except the first and last),
 	// record which room comes directly before it
@@ -60,7 +60,7 @@ func RemoveLink(roomLinks []string, targetRoom string) []string {
 
 // CopyRoomsMap creates a deep copy of the Rooms map.
 // This is used to reset the state of rooms during pathfinding.
-func CopyRoomsMap(originalRooms map[string]Var.Room) map[string]Var.Room {
+func CopyRooms(originalRooms map[string]Var.Room) map[string]Var.Room {
 	clonedRooms := make(map[string]Var.Room)
 
 	for roomName, roomData := range originalRooms {
