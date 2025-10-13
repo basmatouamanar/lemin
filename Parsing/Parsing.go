@@ -7,43 +7,6 @@ import (
 	"strings"
 )
 
-// HandleExport prints the input data and simulates the movement of ants along the shortest path.
-func Printing(antsPerPath []int, totalTurns int, shortestPathIndex int, originalData string) {
-	// Print the original input data first
-	fmt.Println(originalData + "\n")
-
-	// Result stores the movement sequence for each turn
-	var movementLog []string
-	antCounter := 1
-
-	// Simulate ant movement along the selected shortest path
-	for pathIndex, numAnts := range antsPerPath {
-		for antNum := 0; antNum < numAnts; antNum++ {
-			// Iterate through rooms in the path for this ant
-			for stepIndex, roomName := range Var.AllValidPaths[shortestPathIndex][pathIndex][1:] {
-				targetIndex := stepIndex + antNum
-
-				// Ensure the result slice has enough entries
-				if targetIndex >= len(movementLog) {
-					movementLog = append(movementLog, "")
-				}
-
-				// Add a space if there is already movement recorded for this turn
-				if movementLog[targetIndex] != "" {
-					movementLog[targetIndex] += " "
-				}
-
-				// Append the movement string "L<ant_number>-<room_name>"
-				movementLog[targetIndex] += "L" + strconv.Itoa(antCounter) + "-" + roomName
-			}
-			antCounter++
-		}
-	}
-
-	// Print the simulated movements turn by turn
-	fmt.Print(strings.Join(movementLog, "\n"))
-}
-
 
 // ParsingData parses the input data and initializes global variables.
 // It validates the number of ants, rooms, and links.
@@ -174,7 +137,7 @@ func checkIsValid(roomNames map[string]bool, roomCordinations map[string]bool, s
 	return nil
 }
 
-// fillRoomData stores links between rooms in the global Rooms map.
+//  stores links between rooms in the global Rooms map.
 // It ensures that links are valid and not duplicated.
 func fillRoomData(str string) error {
     split := strings.Split(str, "-")

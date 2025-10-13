@@ -1,55 +1,16 @@
-package Find 
+package Find
 
 import (
 	"fmt"
-	"lemin/Var"
-	"lemin/Helpers"
 	"os"
+
+	"lemin/Helpers"
+	"lemin/Var"
 )
-// OrderAnts distributes the ants across the chosen set of paths. 
-// It assigns ants in a way that balances path length with the number of ants already on each path. 
-// The goal is to minimize the total number of turns required. 
-// Returns the number of turns and the distribution of ants per path.
-func DistributeAnts(pathIndex int) (int, []int) {
-	// Get all valid paths for this index
-	paths := Var.AllValidPaths[pathIndex]
-	totalAnts := Var.AntsNumber
 
-	// Prepare an array to track how many ants go on each path
-	antsOnPath := make([]int, len(paths))
-
-	currentPath := 0
-	shortestPathLength := 0
-
-	for totalAnts > 0 {
-		// Compute total length = path length + ants already on it
-		shortestPathLength = len(paths[currentPath]) + antsOnPath[currentPath]
-
-		// Check if the next path is currently shorter
-		if len(paths) > 1 &&
-			currentPath+1 < len(paths) &&
-			len(paths[currentPath+1])+antsOnPath[currentPath+1] < shortestPathLength {
-			shortestPathLength = len(paths[currentPath+1]) + antsOnPath[currentPath+1]
-			currentPath++
-		}
-
-		// Assign one ant to the selected path
-		antsOnPath[currentPath]++
-		totalAnts--
-
-		// Loop back to the first path if at the end
-		if currentPath == len(paths)-1 {
-			currentPath = 0
-		}
-	}
-
-	return shortestPathLength - 1, antsOnPath
-}
-
-
-// FindValidPaths runs multiple BFS iterations to find all valid non-overlapping paths. 
-// It manages backtracking when conflicts are detected between new and old paths. 
-// The function removes conflicting links and keeps exploring until no more paths exist. 
+// FindValidPaths runs multiple BFS iterations to find all valid non-overlapping paths.
+// It manages backtracking when conflicts are detected between new and old paths.
+// The function removes conflicting links and keeps exploring until no more paths exist.
 // If no valid paths are found, the program exits with an error.
 func FindValidPaths() {
 	removedLinks := make(map[string][]string)
@@ -101,9 +62,8 @@ func FindValidPaths() {
 	}
 }
 
-
-// CheckIfBackTrackingPath inspects the last discovered path to see if it overlaps backwards 
-// with any previously found paths. It compares links in reverse order to detect conflicts. 
+// CheckIfBackTrackingPath inspects the last discovered path to see if it overlaps backwards
+// with any previously found paths. It compares links in reverse order to detect conflicts.
 // Returns a flag (true/false) and the nodes involved if a backtracking conflict is found.
 func CheckIfBackTrackingPath() (bool, string, string) {
 	// The most recently found path
@@ -134,11 +94,10 @@ func CheckIfBackTrackingPath() (bool, string, string) {
 	return false, "", ""
 }
 
-
-// BFS performs a Breadth-First Search to explore paths from the start room to the end room. 
-// It expands all possible routes level by level until the end is found. 
-// Whenever a path to the end is discovered, it is saved as a valid path. 
-// The function avoids revisiting nodes and cleans up paths that are blocked. 
+// BFS performs a Breadth-First Search to explore paths from the start room to the end room.
+// It expands all possible routes level by level until the end is found.
+// Whenever a path to the end is discovered, it is saved as a valid path.
+// The function avoids revisiting nodes and cleans up paths that are blocked.
 // Returns true if at least one valid path is found, otherwise false.
 func BFS() bool {
 	start := Var.Start
@@ -153,9 +112,9 @@ func BFS() bool {
 
 	for len(activePaths) != 0 {
 		// If the start room has no links, there are no paths to explore
-        if len(Var.Rooms[start].Links) == 0 {
-            return false
-        }
+		if len(Var.Rooms[start].Links) == 0 {
+			return false
+		}
 
 		for i := 0; i < len(activePaths); i++ {
 			validConnections := 0
@@ -206,7 +165,7 @@ func BFS() bool {
 						activePaths = append(activePaths, append(newPath[:len(newPath)-1], neighborName))
 					}
 
-				// ❌ Dead-end: no valid links left
+					// ❌ Dead-end: no valid links left
 				} else if linkIndex == len(Var.Rooms[currentRoomName].Links)-1 && validConnections == 0 {
 					if i+1 < len(activePaths) {
 						activePaths = append(activePaths[:i], activePaths[i+1:]...)
