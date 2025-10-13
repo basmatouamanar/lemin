@@ -2,124 +2,150 @@ package Parsing
 
 import (
 	"fmt"
-	"lem-in/GlobVar"
-	"os"
+	"lem-in/Var"
 	"strconv"
 	"strings"
 )
 
 // HandleExport prints the input data and simulates the movement of ants along the shortest path.
-func HandleExport(ants []int, turns int, shortestPathIndex int, originalData string) {
-    fmt.Println(originalData+"\n")
+func Printing(antsPerPath []int, totalTurns int, shortestPathIndex int, originalData string) {
+	// Print the original input data first
+	fmt.Println(originalData + "\n")
 
-    var result = []string{}
-    AntsMoved := 1
+	// Result stores the movement sequence for each turn
+	var movementLog []string
+	antCounter := 1
 
-    // Simulate ant movement along the shortest path
-     for i, Ants := range ants {
-        for j:= 0 ; j < Ants; j++{
-            for k, room:= range GlobVar.AllValidPaths[shortestPathIndex][i][1:] {
-                if k+j > len(result)-1 {
-                    result = append(result, "")
-                }
-                if result[k+j] != "" {
-                    result[k+j] += " "
-                }
-                result[k+j] += "L"+strconv.Itoa(AntsMoved)+"-"+room
-            }
-            AntsMoved++
-        }
-    }
-    // Print the movement of ants
-    fmt.Print(strings.Join(result, "\n"))
+	// Simulate ant movement along the selected shortest path
+	for pathIndex, numAnts := range antsPerPath {
+		for antNum := 0; antNum < numAnts; antNum++ {
+			// Iterate through rooms in the path for this ant
+			for stepIndex, roomName := range Var.AllValidPaths[shortestPathIndex][pathIndex][1:] {
+				targetIndex := stepIndex + antNum
+
+				// Ensure the result slice has enough entries
+				if targetIndex >= len(movementLog) {
+					movementLog = append(movementLog, "")
+				}
+
+				// Add a space if there is already movement recorded for this turn
+				if movementLog[targetIndex] != "" {
+					movementLog[targetIndex] += " "
+				}
+
+				// Append the movement string "L<ant_number>-<room_name>"
+				movementLog[targetIndex] += "L" + strconv.Itoa(antCounter) + "-" + roomName
+			}
+			antCounter++
+		}
+	}
+
+	// Print the simulated movements turn by turn
+	fmt.Print(strings.Join(movementLog, "\n"))
 }
 
 
 // ParsingData parses the input data and initializes global variables.
 // It validates the number of ants, rooms, and links.
-func ParsingData(str string) error {
-    var err error
-    roomCordinations := make(map[string]bool)
+func ParseData(input string) error {
+	var err error
 
-    split := strings.Split(str, "\n")
+	// Track used room names and coordinates to prevent duplicates
 	roomNames := make(map[string]bool)
+	roomCoordinates := make(map[string]bool)
 
-	GlobVar.AntsNumber, err = strconv.Atoi(split[0])
-	if  err != nil || GlobVar.AntsNumber <= 0 {
+	// Split the input data into lines
+	lines := strings.Split(input, "\n")
+
+	// Parse number of ants
+	Var.AntsNumber, err = strconv.Atoi(lines[0])
+	if err != nil || Var.AntsNumber <= 0 {
 		return fmt.Errorf("ERROR: invalid number of ants")
 	}
 
-    for i:= 1; i < len(split); i++ {
-             if  spacesplit := strings.Split(split[i], " "); len(spacesplit) == 3 {
-				
-				err := checkIsValid(roomNames, roomCordinations,spacesplit,i)
-				if err != nil {
-					return err
-				}
-				
-            } else if split[i] == "##start" {
-				if i+1 >= len(split) {
-                    return fmt.Errorf("ERROR: start-flag trailling in the end at line %d", i+1)
-                }
+	// Process each line in the input data
+	for lineIndex := 1; lineIndex < len(lines); lineIndex++ {
+		line := lines[lineIndex]
 
-                if GlobVar.Start != "" {
-                    return fmt.Errorf("ERROR: multiple ##start found at line %d", i+1)
-                }
-				spacesplit := strings.Split(split[i+1], " ")
-				
-				err := checkIsValid(roomNames, roomCordinations,spacesplit,i+1)
-				if err != nil {
-					return err
-				}
-                GlobVar.Start = spacesplit[0]
-                i++
-                
-            } else if  split[i] == "##end" {
-                if i+1 >= len(split) {
-                    return fmt.Errorf("ERROR: end-flag trailling in the end at line %d", i+1)
-                }
-                
-				if GlobVar.End != "" {
-                    return fmt.Errorf("ERROR: multiple ##end found at line %d", i+1)
-                }
-				spacesplit := strings.Split(split[i+1], " ")
+		// Room definition (format: name x y)
+		if fields := strings.Split(line, " "); len(fields) == 3 {
+			if err := checkIsValid(roomNames, roomCoordinates, fields, lineIndex); err != nil {
+				return err
+			}
 
-                GlobVar.End = spacesplit[0]    
-				if len(spacesplit) != 3 {
-                    return fmt.Errorf("ERROR: No valid room initialization after start flag at line %d", i+1)
-				}
-				
-				err := checkIsValid(roomNames, roomCordinations,spacesplit,i+1)
-				if err != nil {
-					return err
-				}
-                roomCordinations[strings.Join(spacesplit[1:], " ")] = true
-				i++
-				
-            } else if strings.HasPrefix(split[i], "#") {
-                continue
-            } else if dashSplit := strings.Split(split[i], "-"); len(dashSplit) == 2 {
-				if !roomNames[dashSplit[0]] || !roomNames[dashSplit[1]] {
-                    return fmt.Errorf("ERROR: Trying linking an non-initialized room at line %d", i+1)
-				}
-                if err := fillRoomData(split[i]); err != nil {
-                    return fmt.Errorf("ERROR: invaliCd link format at line %d", i+1)
-                }
-            } else if split[i] == "" {
-                continue
-            } else {
-                fmt.Println("ERROR: invalid data format, at line "+strconv.Itoa(i+1))
-                os.Exit(0)
-            }   
-    }
+		// ##start directive
+		} else if line == "##start" {
+			if lineIndex+1 >= len(lines) {
+				return fmt.Errorf("ERROR: start-flag trailing at end of file at line %d", lineIndex+1)
+			}
+			if Var.Start != "" {
+				return fmt.Errorf("ERROR: multiple ##start flags found at line %d", lineIndex+1)
+			}
 
-	if (GlobVar.Start == "" || GlobVar.End == "") {
-		return fmt.Errorf("ERROR: missing start or end room;")
-	} else if GlobVar.Start == GlobVar.End {
-		return fmt.Errorf("ERROR: start is end;")
+			nextFields := strings.Split(lines[lineIndex+1], " ")
+			if err := checkIsValid(roomNames, roomCoordinates, nextFields, lineIndex+1); err != nil {
+				return err
+			}
+
+			Var.Start = nextFields[0]
+			lineIndex++ // Skip next line (processed as start room)
+
+		// ##end directive
+		} else if line == "##end" {
+			if lineIndex+1 >= len(lines) {
+				return fmt.Errorf("ERROR: end-flag trailing at end of file at line %d", lineIndex+1)
+			}
+			if Var.End != "" {
+				return fmt.Errorf("ERROR: multiple ##end flags found at line %d", lineIndex+1)
+			}
+
+			nextFields := strings.Split(lines[lineIndex+1], " ")
+			if len(nextFields) != 3 {
+				return fmt.Errorf("ERROR: invalid room initialization after ##end flag at line %d", lineIndex+1)
+			}
+
+			if err := checkIsValid(roomNames, roomCoordinates, nextFields, lineIndex+1); err != nil {
+				return err
+			}
+
+			Var.End = nextFields[0]
+			roomCoordinates[strings.Join(nextFields[1:], " ")] = true
+			lineIndex++ // Skip next line (processed as end room)
+
+		// Comment line — ignore
+		} else if strings.HasPrefix(line, "#") {
+			continue
+
+		// Link definition (format: room1-room2)
+		} else if linkParts := strings.Split(line, "-"); len(linkParts) == 2 {
+			if !roomNames[linkParts[0]] || !roomNames[linkParts[1]] {
+				return fmt.Errorf("ERROR: linking uninitialized room at line %d", lineIndex+1)
+			}
+			if err := fillRoomData(line); err != nil {
+				return fmt.Errorf("ERROR: invalid link format at line %d", lineIndex+1)
+			}
+
+		// Empty line — ignore
+		} else if line == "" {
+			continue
+
+		// Invalid format
+		} else {
+			return fmt.Errorf("ERROR: invalid data format at line %d", lineIndex+1)
+		}
 	}
-    return nil
+
+	// Final validation
+	if Var.Start == "" || Var.End == "" {
+		return fmt.Errorf("ERROR: missing start or end room")
+	}
+	if Var.Start == Var.End {
+		return fmt.Errorf("ERROR: start and end rooms cannot be the same")
+	}
+
+	return nil
 }
+
 
 
 // checkIsValid validates room initialization.
@@ -157,24 +183,24 @@ func fillRoomData(str string) error {
         return fmt.Errorf("room %s can't link to itself", split[0])
     }
 
-    for _, link := range GlobVar.Rooms[split[0]].Links {
+    for _, link := range Var.Rooms[split[0]].Links {
         if link == split[1] {
             return fmt.Errorf("duplicate link between %s and %s", split[0], split[1])
         }
     }
 
-    if (split[0] == GlobVar.Start && split[1] == GlobVar.End) || (split[0] == GlobVar.End && split[1] == GlobVar.Start) {
-        GlobVar.ValidPaths = [][]string{{GlobVar.Start, GlobVar.End}}
+    if (split[0] == Var.Start && split[1] == Var.End) || (split[0] == Var.End && split[1] == Var.Start) {
+        Var.ValidPaths = [][]string{{Var.Start, Var.End}}
         return nil
     }
 
-    roomA := GlobVar.Rooms[split[0]]
+    roomA := Var.Rooms[split[0]]
     roomA.Links = append(roomA.Links, split[1])
-    GlobVar.Rooms[split[0]] = roomA
+    Var.Rooms[split[0]] = roomA
 
-    roomB := GlobVar.Rooms[split[1]]
+    roomB := Var.Rooms[split[1]]
     roomB.Links = append(roomB.Links, split[0])
-    GlobVar.Rooms[split[1]] = roomB
+    Var.Rooms[split[1]] = roomB
 
     return nil
 }

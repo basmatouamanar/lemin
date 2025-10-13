@@ -1,74 +1,91 @@
 package Helpers
 
-import "lem-in/GlobVar"
+import "lem-in/Var"
 
 // RemovePathsLinks removes links between rooms that are part of a valid path.
 // This ensures that paths do not overlap.
 func RemovePathsLinks() {
-	for index := 0; index < len(GlobVar.ValidPaths); index++ {
-		path := GlobVar.ValidPaths[index]
-		for i := 0; i < len(path)-1; i++ {
-			node := GlobVar.Rooms[path[i]]
-			node.Links = RemoveLink(node.Links, path[i+1])
-			GlobVar.Rooms[path[i]] = node
+	for pathIndex := 0; pathIndex < len(Var.ValidPaths); pathIndex++ {
+		currentPath := Var.ValidPaths[pathIndex]
+
+		// Iterate through each room in the path (except the last one)
+		for roomIndex := 0; roomIndex < len(currentPath)-1; roomIndex++ {
+			currentRoom := Var.Rooms[currentPath[roomIndex]]
+
+			// Remove the link from the current room to the next one
+			currentRoom.Links = RemoveLink(currentRoom.Links, currentPath[roomIndex+1])
+
+			// Update the modified room in the map
+			Var.Rooms[currentPath[roomIndex]] = currentRoom
 		}
 	}
 }
+
 
 // SaveBeforeInPath stores the previous room in the path for each room.
 // This is used during backtracking to avoid revisiting rooms.
 func SaveBeforeInPath() {
-	lastPath := GlobVar.ValidPaths[len(GlobVar.ValidPaths)-1]
-	for i := 1; i < len(lastPath)-1; i++ { // see if the link to the end should be removed
-		room := GlobVar.Rooms[lastPath[i]]
-		room.BeforeInPath = lastPath[i-1]
-		GlobVar.Rooms[lastPath[i]] = room
+	// Get the most recently found valid path
+	currentPath := Var.ValidPaths[len(Var.ValidPaths)-1]
+
+	// For each room in the path (except the first and last),
+	// record which room comes directly before it
+	for roomIndex := 1; roomIndex < len(currentPath)-1; roomIndex++ {
+		roomName := currentPath[roomIndex]
+		previousRoomName := currentPath[roomIndex-1]
+
+		room := Var.Rooms[roomName]
+		room.BeforeInPath = previousRoomName
+		Var.Rooms[roomName] = room
 	}
 }
 
 
+
 // RemoveLink removes a specific link from a room's list of links.
-func RemoveLink(links []string, conflictRoom string) []string {
-	for i := 0; i < len(links); i++ {
-		if links[i] == conflictRoom {
-			if i+1 < len(links) {
-				links = append(links[:i], links[i+1:]...)
+func RemoveLink(roomLinks []string, targetRoom string) []string {
+	for i := 0; i < len(roomLinks); i++ {
+		if roomLinks[i] == targetRoom {
+			// Remove the target room from the list of links
+			if i+1 < len(roomLinks) {
+				roomLinks = append(roomLinks[:i], roomLinks[i+1:]...)
 			} else {
-				links = links[:i]
+				roomLinks = roomLinks[:i]
 			}
 		}
 	}
-	return links
+	return roomLinks
 }
 
 
 // CopyRoomsMap creates a deep copy of the Rooms map.
 // This is used to reset the state of rooms during pathfinding.
-func CopyRoomsMap(original map[string]GlobVar.Room) map[string]GlobVar.Room {
-	copied := make(map[string]GlobVar.Room)
+func CopyRoomsMap(originalRooms map[string]Var.Room) map[string]Var.Room {
+	clonedRooms := make(map[string]Var.Room)
 
-	for key, room := range original {
-		// Deep copy the links slice
-		newLinks := make([]string, len(room.Links))
-		copy(newLinks, room.Links)
+	for roomName, roomData := range originalRooms {
+		// Deep copy the Links slice to avoid shared references
+		copiedLinks := make([]string, len(roomData.Links))
+		copy(copiedLinks, roomData.Links)
 
-		// Create a new Room struct with the copied slice
-		copied[key] = GlobVar.Room{
-			Links:        newLinks,
-			IsChecked:    room.IsChecked,
-			BeforeInPath: room.BeforeInPath,
+		// Create a new Room struct using the copied data
+		clonedRooms[roomName] = Var.Room{
+			Links:        copiedLinks,
+			IsChecked:    roomData.IsChecked,
+			BeforeInPath: roomData.BeforeInPath,
 		}
 	}
 
-	return copied
+	return clonedRooms
 }
+
 
 // ResetIsChecked resets the IsChecked flag for all rooms.
 // This prepares the rooms for a new pathfinding iteration.
 func ResetIsChecked() {
-	for index := range GlobVar.Rooms {
-		room := GlobVar.Rooms[index]
+	for index := range Var.Rooms {
+		room := Var.Rooms[index]
 		room.IsChecked = false
-		GlobVar.Rooms[index] = room
+		Var.Rooms[index] = room
 	}
 }

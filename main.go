@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"lem-in/Algorithms"
-	"lem-in/GlobVar"
+	"lem-in/Find"
+	"lem-in/Var"
 	"lem-in/Helpers"
 	"lem-in/Parsing"
 	"os"
@@ -27,38 +27,39 @@ func main() {
 	}
 
 	// Parse the input data and initialize global variables
-	err = Parsing.ParsingData(string(dataBytes))
+	err = Parsing.ParseData(string(dataBytes))
 
 
-	GlobVar.OriginalRooms = Helpers.CopyRoomsMap(GlobVar.Rooms)
+	Var.OriginalRooms = Helpers.CopyRoomsMap(Var.Rooms)
 	if err != nil {
 		fmt.Println("ERROR: invalid data format;", err)
 		return
 	}
 
-	Algorithms.FindValidPaths()
-	GlobVar.AllValidPaths = append(GlobVar.AllValidPaths, GlobVar.ValidPaths)
+	Find.FindValidPaths()
+	Var.AllValidPaths = append(Var.AllValidPaths, Var.ValidPaths)
 
 	// Sort valid paths by length (shortest first)
-	sort.Slice(GlobVar.ValidPaths, func(i, j int) bool {
-		return len(GlobVar.ValidPaths[i]) < len(GlobVar.ValidPaths[j])
+	sort.Slice(Var.ValidPaths, func(i, j int) bool {
+		return len(Var.ValidPaths[i]) < len(Var.ValidPaths[j])
 	})
 
-	// Assign ants to the shortest path and calculate the number of turns
-	shortestPathIndex := 0
-	lessTurns, antsOrdred := Algorithms.OrderAnts(0)
+	// Assign ants to the initial path and calculate the required turns
+	selectedPathIndex := 0
+	minTurns, orderedAnts := Find.DistributeAnts(0)
 
-	// Check other paths to find the one with the least number of turns
-	for i := 1; i < len(GlobVar.AllValidPaths); i++ {
-		turns, ants := Algorithms.OrderAnts(i)
-		if turns < lessTurns {
-			antsOrdred = ants
-			lessTurns = turns
-			shortestPathIndex = i
+// Evaluate all other paths to find the path with the minimum number of turns
+	for pathIndex := 1; pathIndex < len(Var.AllValidPaths); pathIndex++ {
+		turns, antsPerPath := Find.DistributeAnts(pathIndex)
+		if turns < minTurns {
+			orderedAnts = antsPerPath
+			minTurns = turns
+			selectedPathIndex = pathIndex
 		}
 	}
 
-	// Print the results, including the input data and ant movements
-	Parsing.HandleExport(antsOrdred,lessTurns,shortestPathIndex, string(dataBytes))
+// Print the results, including input data and ant movements
+	Parsing.Printing(orderedAnts, minTurns, selectedPathIndex, string(dataBytes))
 	fmt.Println()
+
 }
