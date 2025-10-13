@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"lem-in/Find"
-	"lem-in/Var"
-	"lem-in/Helpers"
-	"lem-in/Parsing"
+	"lemin/Find"
+	"lemin/Var"
+	"lemin/Helpers"
+	"lemin/Parsing"
 	"os"
 	"sort"
 )

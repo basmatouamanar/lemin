@@ -2,8 +2,8 @@ package Find
 
 import (
 	"fmt"
-	"lem-in/Var"
-	"lem-in/Helpers"
+	"lemin/Var"
+	"lemin/Helpers"
 	"os"
 )
 // OrderAnts distributes the ants across the chosen set of paths. 

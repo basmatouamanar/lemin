@@ -2,7 +2,7 @@ package Parsing
 
 import (
 	"fmt"
-	"lem-in/Var"
+	"lemin/Var"
 	"strconv"
 	"strings"
 )

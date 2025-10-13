@@ -1,6 +1,6 @@
 package Helpers
 
-import "lem-in/Var"
+import "lemin/Var"
 
 // RemovePathsLinks removes links between rooms that are part of a valid path.
 // This ensures that paths do not overlap.
